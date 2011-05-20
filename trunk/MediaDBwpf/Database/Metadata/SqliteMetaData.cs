@@ -10,6 +10,7 @@ using System.Threading;
 using System.Drawing;
 using System.Drawing.Imaging;
 using MediaDBwpf.Metadata;
+using System.Collections.ObjectModel;
 namespace MediaDBwpf.Database.Metadata
 {
     class SqliteMetaData
@@ -45,7 +46,7 @@ namespace MediaDBwpf.Database.Metadata
             sql_cmd = sql_con.CreateCommand();
             for(int i = 0;i < Media.Count; i++)
             {
-                sql_cmd.CommandText = "insert into mediacache (filepath,hash,thumb,tags) VALUES ('" + Media[i].FilePath.Replace("'","''") + "', '" + Media[i].Hash + "', '" + Media[i]._thumbnail + "', '" + Media[i].tagstring() + "')";
+                sql_cmd.CommandText = "insert into mediacache (filepath,hash,thumb,tags) VALUES ('" + Media[i].FilePath.Replace("'","''") + "', '" + Media[i].Hash + "', '" + Media[i]._thumbnail + "', '" + Media[i].tagstring + "')";
                 sql_cmd.ExecuteNonQuery();
                 //DB = new SQLiteDataAdapter(cmdtext, sql_con);
             }
@@ -65,7 +66,7 @@ namespace MediaDBwpf.Database.Metadata
      
         internal void BulkAddTagToMatchingItems(List<string> tags, string Match)
         {
-            List<MetaData> md = GetItems(_Tag.filepath,Match,Datatograb.tags); // Get all items matching our Name string
+            ObservableCollection<MetaData> md = GetItems(_Tag.filepath, Match, Datatograb.tags); // Get all items matching our Name string
 
             // Foreach item add the tags
             foreach (MetaData m in md)
@@ -118,8 +119,8 @@ namespace MediaDBwpf.Database.Metadata
             sql_con.Open();
             sql_cmd = sql_con.CreateCommand();
             MemoryStream ms = new MemoryStream();
-            m.Thumbnail().Save(ms, ImageFormat.Jpeg);
-            sql_cmd.CommandText = "insert into mediacache (filepath,hash,thumb,tags) VALUES ('" + m.FilePath.Replace("'", "''") + "', '" + m.Hash + "', '" + ms.ToArray() + "', '" + m.tagstring() + "')";
+            m.Thumbnail.Save(ms, ImageFormat.Jpeg);
+            sql_cmd.CommandText = "insert into mediacache (filepath,hash,thumb,tags) VALUES ('" + m.FilePath.Replace("'", "''") + "', '" + m.Hash + "', '" + ms.ToArray() + "', '" + m.tagstring + "')";
             sql_cmd.ExecuteNonQuery();
             //DB = new SQLiteDataAdapter(cmdtext, sql_con);
 
@@ -128,7 +129,7 @@ namespace MediaDBwpf.Database.Metadata
 
         internal void AddItems(List<MetaData> md)
         {
-            List<MetaData> list = GetItems(SqliteMetaData._Tag.tags, "All", SqliteMetaData.Datatograb.hash);
+            ObservableCollection<MetaData> list = GetItems(SqliteMetaData._Tag.tags, "All", SqliteMetaData.Datatograb.hash);
             
             sql_con.Open();
             SQLiteCommand  cmd = sql_con.CreateCommand();
@@ -157,7 +158,7 @@ namespace MediaDBwpf.Database.Metadata
             MemoryStream ms = new MemoryStream();
             if (m._thumbnail != null)
             {
-                m.Thumbnail().Save(ms, ImageFormat.Jpeg);
+                m.Thumbnail.Save(ms, ImageFormat.Jpeg);
                 img = ms.ToArray();
             }
 
@@ -166,7 +167,7 @@ namespace MediaDBwpf.Database.Metadata
             cmd.Parameters.Add("@fp", DbType.String).Value = m.FilePath;
             cmd.Parameters.Add("@ha", DbType.String).Value = m.Hash;
             cmd.Parameters.Add("@th", DbType.Binary).Value = img;
-            cmd.Parameters.Add("@ta", DbType.String).Value = m.tagstring();
+            cmd.Parameters.Add("@ta", DbType.String).Value = m.tagstring;
             //cmd.CommandText = "insert into mediacache (filepath,hash,thumb,tags) VALUES ('" + m.FilePath.Replace("'", "''") + "', '" + m.Hash + "', '" + img + "', '" + m.tagstring() + "')";
             cmd.ExecuteNonQuery();
         }
@@ -230,7 +231,7 @@ namespace MediaDBwpf.Database.Metadata
              sql_con.Close();
              return ds;
          }
-         public List<MetaData> GetItems(SqliteMetaData._Tag PropertyToMatch, string StringToMatch, SqliteMetaData.Datatograb GrabThis) 
+         public ObservableCollection<MetaData> GetItems(SqliteMetaData._Tag PropertyToMatch, string StringToMatch, SqliteMetaData.Datatograb GrabThis) 
         {
             SetConnection();
             sql_con.Open();
@@ -268,7 +269,7 @@ namespace MediaDBwpf.Database.Metadata
             
             SQLiteDataReader r = null;
             r = sql_cmd.ExecuteReader(CommandBehavior.Default);
-            List<MetaData> m = new List<MetaData>();
+            ObservableCollection<MetaData> m = new ObservableCollection<MetaData>();
             while (r.Read())
             {
                 
@@ -409,11 +410,11 @@ namespace MediaDBwpf.Database.Metadata
             sql_cmd.Parameters.Add("@ha", DbType.String).Value = m.Hash;
             if (t == _Tag.tags)
             {
-                sql_cmd.Parameters.Add("@var", DbType.String).Value = m.tagstring();
+                sql_cmd.Parameters.Add("@var", DbType.String).Value = m.tagstring;
             }
             if (t == _Tag.thumb)
             {
-                MemoryStream ms = new MemoryStream(); m.Thumbnail().Save(ms, ImageFormat.Jpeg);
+                MemoryStream ms = new MemoryStream(); m.Thumbnail.Save(ms, ImageFormat.Jpeg);
                 sql_cmd.Parameters.Add("@var", DbType.Object).Value = ms.ToArray();
             }
             if (t == _Tag.filepath)
@@ -428,7 +429,7 @@ namespace MediaDBwpf.Database.Metadata
         }
         public void CleanDuplicateHashes()
         {
-            List<MetaData> md = new List<MetaData>();
+            ObservableCollection<MetaData> md = new ObservableCollection<MetaData>();
             md = GetItems(_Tag.tags, "All", Datatograb.all);
             HashSet<MetaData> dontremove = new HashSet<MetaData>();
             List<MetaData> remove = new List<MetaData>();

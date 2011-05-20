@@ -7,11 +7,12 @@ using Microsoft.WindowsAPICodePack.Shell;
 using System.Security.Cryptography;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.Data;
 namespace MediaDBwpf.Metadata
 {
     public class MetaData : IEquatable<MetaData>
     {
-        public HashSet<Person> People = new HashSet<Person>();
+        public HashSet<string> People = new HashSet<string>();
         public HashSet<string> Tags = new HashSet<string>();
         public string FilePath;
         public string Hash;
@@ -23,49 +24,85 @@ namespace MediaDBwpf.Metadata
         public MetaData(string filepath)
         {
             FilePath = filepath;
-            Hash = CalculateMD5Hash(Filename() + (new FileInfo(FilePath).Length));
+            Hash = CalculateMD5Hash(Filename + (new FileInfo(FilePath).Length));
             //Thumbnail();
         }
-
+        public MetaData(DataRow row)
+        {
+            string[] split = { "," };
+            id = Convert.ToInt32(row.ItemArray[5]);
+            FilePath = row.ItemArray[1].ToString();
+            Hash = row.ItemArray[0].ToString();
+            Byte[] img = (byte[])row.ItemArray[2];
+            if ((img != null) && (img.Count() > 0)) { _thumbnail = Image.FromStream(new MemoryStream(img)); }
+            
+            Tags.UnionWith(row.ItemArray[3].ToString().Split(split, StringSplitOptions.RemoveEmptyEntries));
+            People.UnionWith(row.ItemArray[4].ToString().Split(split, StringSplitOptions.RemoveEmptyEntries));
+           // Hash = CalculateMD5Hash(Filename + (new FileInfo(FilePath).Length));
+            //Thumbnail();
+        }
         public MetaData()
         { }
 
-        public Image Thumbnail()
+        public Image Thumbnail
         {
-            if (_thumbnail != null)
+            get
             {
-                return _thumbnail;
-                //byte[] ia = Convert.FromBase64String(thumbnail); MemoryStream ms = new MemoryStream(ia, 0, ia.Length);
-                //while (!ms.CanRead) { Thread.Sleep(10);  }
-                //return Image.FromStream(ms, true);
-            }
-            else
-            {
-                ShellFile file = ShellFile.FromFilePath(FilePath);
-                MemoryStream ms = new MemoryStream();
-                file.Thumbnail.Bitmap.Save(ms, ImageFormat.Jpeg);
-                _thumbnail = Image.FromStream(ms);
-                //dbaccess db = new dbaccess();
-                //db.UpdateItem(this);
-                if (this.Update != null)
+                if (_thumbnail != null)
                 {
-                    this.Update(this, new EventArgs());
+                    return _thumbnail;
+                    //byte[] ia = Convert.FromBase64String(thumbnail); MemoryStream ms = new MemoryStream(ia, 0, ia.Length);
+                    //while (!ms.CanRead) { Thread.Sleep(10);  }
+                    //return Image.FromStream(ms, true);
                 }
-                return _thumbnail;
+                else
+                {
+                    ShellFile file = ShellFile.FromFilePath(FilePath);
+                    MemoryStream ms = new MemoryStream();
+                    file.Thumbnail.Bitmap.Save(ms, ImageFormat.Jpeg);
+                    _thumbnail = Image.FromStream(ms);
+                    //dbaccess db = new dbaccess();
+                    //db.UpdateItem(this);
+                    if (this.Update != null)
+                    {
+                        this.Update(this, new EventArgs());
+                    }
+                    return _thumbnail;
+                }
             }
+            set { }
+
         }
-        public string tagstring()
+        public string tagstring
         {
-            string r = "-";
+            get {             string r = "";
             foreach (string s in Tags)
             {
-                r = r + s + "-";
+                r = r + "," + s;
             }
-            return r;
+            return r; }
+            set { }
+
         }
-        public string Filename()
+        public string peoplestring
         {
-            return FilePath.Substring(FilePath.LastIndexOf("\\") + 1);
+            get
+            {
+                string r = "";
+                foreach (string s in People)
+                {
+                    r = r + "," + s;
+                }
+                return r;
+            }
+            set { }
+
+        }
+        public string Filename
+        {
+            get { return FilePath.Substring(FilePath.LastIndexOf("\\") + 1); }
+            set { }
+            
         }
         public override string ToString()
         {

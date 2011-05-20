@@ -15,71 +15,251 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Media;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Collections;
 namespace MediaDBwpf
 {
-//     public partial class MainWindow : Window, IVirtualListLoader<MetaData>
-//         {
-//         public readonly DependencyProperty ItemCountProperty = DependencyProperty.Register("ItemCount", typeof(int), typeof(MainWindow), new PropertyMetadata(100000, null, ItemCountCoerceValue));
-//         public readonly DependencyProperty CreationOverheadProperty = DependencyProperty.Register("CreationOverhead", typeof(int), typeof(MainWindow), new PropertyMetadata(3000, null, CreationOverheadCoerceValue));
-//         public readonly DependencyProperty SimulateDataLoadingErrorProperty = DependencyProperty.Register("SimulateDataLoadingError", typeof(bool), typeof(MainWindow), new PropertyMetadata(false));
-//         public int ItemCount
-//         {
-//             get { return (int)GetValue(ItemCountProperty); }
-//             set { SetValue(ItemCountProperty, value); }
-//         }
-//         private static object ItemCountCoerceValue(DependencyObject d, object baseValue)
-//         {
-//             int value;
-//             // if the item count is not an integral value greater than 0, coerce it to 100
-//             if (baseValue == null || !int.TryParse(baseValue.ToString(), out value) || value < 1)
-//                 return 100;
-//             return baseValue;
-//         }
-//         private static object CreationOverheadCoerceValue(DependencyObject d, object baseValue)
-//         {
-//             int value;
-//             // if the creation overhead is not an integral value greater than 0, coerce it to 1
-//             if (baseValue == null || !int.TryParse(baseValue.ToString(), out value) || value < 1)
-//                 return 1;
-//             // creation overhead should not be greater than 10 seconds
-//             if (value > 1)
-//                 return 1;
-//             return baseValue;
-//         }
-//         private T Invoke<T>(Func<T> callback)
-//         {
-//             return (T)Dispatcher.Invoke(DispatcherPriority.Send, new Func<object>(() => { return callback(); }));
-//         }
-//         public bool CanSort
-//         {
-//             get { return true; }
-//         }
-//         private MetaData LoadMetaData(int id)
-//         {
-//             return MD[id];
-//         }
-//         public IList<MetaData> LoadRange(int startIndex, int count, SortDescriptionCollection sortDescriptions, out int overallCount)
-//         {
-//             overallCount = DS.metacache.Count;
-//             SortDescription sortDescription = sortDescriptions == null || sortDescriptions.Count == 0 ? new SortDescription() : sortDescriptions[0];
-//             ListSortDirection direction = string.IsNullOrEmpty(sortDescription.PropertyName) ? ListSortDirection.Ascending : sortDescription.Direction;
-//             MetaData[] mdd = new MetaData[count];
-//             for (int i = 0; i < count; i++)
-//             {
-//                 int index;
-//                 if (direction == ListSortDirection.Ascending)
-//                     index = startIndex + i;
-//                 else
-//                     index = overallCount - 1 - startIndex - i;
-//                 mdd[i] = new MetaData(DS.metacache[index]);
-//                 //mdd[i] = MD[index];// new Person(index);
-//             }
-// 
-//             return mdd;
-//         }
-//     
-//     }
+    public class MetaDataList : IList<MetaData>
+    {
+        #region Private Variables
 
+        private List<MetaData> _Strings = new List<MetaData>();
+
+        #endregion
+
+        #region Interface Members
+
+        public MetaData this[int index]
+        {
+            get
+            {
+                return _Strings[index];
+            }
+            set
+            {
+                _Strings[index] = value;
+            }
+        }
+
+        public void Add(MetaData item)
+        {
+            _Strings.Add(item);
+        }
+
+        public void Clear()
+        {
+            _Strings.Clear();
+        }
+
+        public bool Contains(MetaData item)
+        {
+            return _Strings.Contains(item);
+        }
+
+        public void CopyTo(MetaData[] array)
+        {
+            _Strings.CopyTo(array);
+        }
+
+        public void CopyTo(MetaData[] array, int index)
+        {
+            _Strings.CopyTo(array, index);
+        }
+
+        public int Count
+        {
+            get
+            {
+                return _Strings.Count;
+            }
+        }
+
+        public IEnumerator<MetaData> GetEnumerator()
+        {
+            return _Strings.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
+        public int IndexOf(MetaData item)
+        {
+            return _Strings.IndexOf(item);
+        }
+
+        public void Insert(int index, MetaData item)
+        {
+            _Strings.Insert(index, item);
+        }
+
+        public bool IsReadOnly
+        {
+            get
+            {
+                return false;
+            }
+        }
+
+        public bool Remove(MetaData item)
+        {
+            return _Strings.Remove(item);
+        }
+
+        public void RemoveAt(int index)
+        {
+            _Strings.RemoveAt(index);
+        }
+
+        #endregion
+
+        #region Constructors
+
+        public MetaDataList()
+        {
+        }
+
+        public MetaDataList(List<MetaData> InitialStringList)
+        {
+            _Strings = InitialStringList;
+        }
+
+        #endregion
+
+       
+    }
+
+
+
+    public class MetaDataCollection : System.Collections.CollectionBase
+    {
+        private Database.mediacacheDataSet DS;
+
+        public MetaDataCollection()
+        {
+
+        }
+
+        public MetaDataCollection(Database.mediacacheDataSet DS)
+        {
+            // TODO: Complete member initialization
+            this.DS = DS;
+        }
+        public MetaData this[int index]
+        {
+            get { return new MetaData(DS.metacache[index]); }
+            //get { return (MetaData)this.List[index]; }
+            set { this.List[index] = value; }
+        }
+
+        public int IndexOf(MetaData item)
+        {
+            return this.List.IndexOf(item);
+        }
+        public int Add(MetaData item)
+        {
+            return this.List.Add(item);
+        }
+
+        public void Remove(MetaData item)
+        {
+            this.InnerList.Remove(item);
+        }
+
+        public void CopyTo(Array array, int index)
+        {
+            this.List.CopyTo(array, index);
+        }
+
+        public void AddRange(MetaDataCollection collection)
+        {
+            for (int i = 0; i < collection.Count; i++)
+            {
+                this.List.Add(collection[i]);
+            }
+        }
+
+        public void AddRange(MetaData[] collection)
+        {
+            this.AddRange(collection);
+        }
+
+        public bool Contains(MetaData item)
+        {
+            return this.List.Contains(item);
+        }
+
+        public void Insert(int index, MetaData item)
+        {
+            this.List.Insert(index, item);
+        }
+
+       
+
+    }
+    /*public partial class MainWindow : Window, IVirtualListLoader<MetaData>
+    {
+        public readonly DependencyProperty ItemCountProperty = DependencyProperty.Register("ItemCount", typeof(int), typeof(MainWindow), new PropertyMetadata(100000, null, ItemCountCoerceValue));
+        public readonly DependencyProperty CreationOverheadProperty = DependencyProperty.Register("CreationOverhead", typeof(int), typeof(MainWindow), new PropertyMetadata(3000, null, CreationOverheadCoerceValue));
+        public readonly DependencyProperty SimulateDataLoadingErrorProperty = DependencyProperty.Register("SimulateDataLoadingError", typeof(bool), typeof(MainWindow), new PropertyMetadata(false));
+        public int ItemCount
+        {
+            get { return (int)GetValue(ItemCountProperty); }
+            set { SetValue(ItemCountProperty, value); }
+        }
+        private static object ItemCountCoerceValue(DependencyObject d, object baseValue)
+         {
+             int value;
+              //if the item count is not an integral value greater than 0, coerce it to 100
+             if (baseValue == null || !int.TryParse(baseValue.ToString(), out value) || value < 1)
+                 return 1000;
+             return baseValue;
+         }
+        private static object CreationOverheadCoerceValue(DependencyObject d, object baseValue)
+         {
+             int value;
+              //if the creation overhead is not an integral value greater than 0, coerce it to 1
+             if (baseValue == null || !int.TryParse(baseValue.ToString(), out value) || value < 1)
+                 return 1;
+             // creation overhead should not be greater than 10 seconds
+             if (value > 1)
+                 return 1;
+             return baseValue;
+         }
+        private T Invoke<T>(Func<T> callback)
+        {
+            return (T)Dispatcher.Invoke(DispatcherPriority.Send, new Func<object>(() => { return callback(); }));
+        }
+        public bool CanSort
+        {
+            get { return true; }
+        }
+        private MetaData LoadMetaData(int id)
+        {
+            return new MetaData(DS.metacache[id]);
+        }
+        public IList<MetaData> LoadRange(int startIndex, int count, SortDescriptionCollection sortDescriptions, out int overallCount)
+        {
+            overallCount = DS.metacache.Count;
+            SortDescription sortDescription = sortDescriptions == null || sortDescriptions.Count == 0 ? new SortDescription() : sortDescriptions[0];
+            ListSortDirection direction = string.IsNullOrEmpty(sortDescription.PropertyName) ? ListSortDirection.Ascending : sortDescription.Direction;
+            MetaData[] mdd = new MetaData[count];
+            for (int i = 0; i < count; i++)
+            {
+                int index;
+                if (direction == ListSortDirection.Ascending)
+                    index = startIndex + i;
+                else
+                    index = overallCount - 1 - startIndex - i;
+                mdd[i] = new MetaData(DS.metacache[index]);
+                //mdd[i] = MD[index]; //new Person(index);
+            }
+
+            return mdd;
+        }
+
+    }
+    */
 
 
 

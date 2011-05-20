@@ -1,4 +1,4 @@
-﻿using System;
+﻿/*using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -106,7 +106,7 @@ namespace MediaDBwpf.Database.Metadata
 
             sql_con.Close();
         }
-        */
+        
         public enum _Tag
         {
             filepath = 0,
@@ -341,7 +341,7 @@ namespace MediaDBwpf.Database.Metadata
             sql_con.Close();
             return m;
         }
-        */
+        
 
         public Dictionary<int, MetaData> _tempstore = new Dictionary<int, MetaData>();
         public string[] _tempstoretags = null;
@@ -463,4 +463,4 @@ namespace MediaDBwpf.Database.Metadata
         }
 
     }
-}
+}*/

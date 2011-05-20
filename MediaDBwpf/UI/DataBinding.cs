@@ -7,9 +7,31 @@ using System.Windows.Controls;
 using System.Windows;
 using System.Windows.Data;
 using System.Globalization;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
 
 namespace MediaDBwpf.UI
 {
+    [ValueConversion(typeof(Image), typeof(BitmapImage))]
+    public class ImgtoImg : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            BitmapImage X = (BitmapImage)value;
+            return X;
+            //string s = (string)value;
+            //return s.Substring(s.LastIndexOf("\\") + 1);
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            Image s = (Image)value;
+            return s;
+            //string strValue = value as string;
+            //return DependencyProperty.UnsetValue;
+        }
+    }
+
     [ValueConversion(typeof(string), typeof(String))]
     public class FilepathToName : IValueConverter
     {

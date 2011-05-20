@@ -38,7 +38,8 @@ namespace MediaDBwpf
         {
 
             //VirtualListItem<MetaData> my = (VirtualListItem<MetaData>)e.AddedItems[0];
-            //MetaData m = my.Data;
+            MetaData m = (MetaData)e.AddedItems[0];
+
             //DS.metacache.DefaultView.Sort = "filepath";
 
            // DS.metacache.DefaultView.RowFilter = "id < 50";

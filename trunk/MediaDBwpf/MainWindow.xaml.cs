@@ -24,7 +24,7 @@ namespace MediaDBwpf
     {
         UI.AppData Appdata;
         SelectedItems Selecteditems = new SelectedItems();
-        Database.Metadata.SqliteMetaData db = new Database.Metadata.SqliteMetaData();
+        //Database.Metadata.SqliteMetaData db = new Database.Metadata.SqliteMetaData();
         public MainWindow()
         {
             InitializeComponent();

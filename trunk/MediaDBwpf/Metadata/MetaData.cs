@@ -8,6 +8,7 @@ using System.Security.Cryptography;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Data;
+using System.Windows.Media.Imaging;
 namespace MediaDBwpf.Metadata
 {
     public class MetaData : IEquatable<MetaData>
@@ -18,7 +19,7 @@ namespace MediaDBwpf.Metadata
         public string Hash;
         public int id;
         //public string thumbnail = null;
-        public Image _thumbnail = null;
+        public BitmapImage _thumbnail = null;
         //public delegate void UpdateEventHandler(MetaData m);
         public event EventHandler Update;
         public MetaData(string filepath)
@@ -34,7 +35,13 @@ namespace MediaDBwpf.Metadata
             FilePath = row.ItemArray[1].ToString();
             Hash = row.ItemArray[0].ToString();
             Byte[] img = (byte[])row.ItemArray[2];
-            if ((img != null) && (img.Count() > 0)) { _thumbnail = Image.FromStream(new MemoryStream(img)); }
+            if ((img != null) && (img.Count() > 0)) { try {
+                _thumbnail = new BitmapImage();
+                _thumbnail.BeginInit();
+                _thumbnail.StreamSource= new MemoryStream(img);
+                _thumbnail.EndInit();
+            } 
+            catch { _thumbnail = null; } }
             
             Tags.UnionWith(row.ItemArray[3].ToString().Split(split, StringSplitOptions.RemoveEmptyEntries));
             People.UnionWith(row.ItemArray[4].ToString().Split(split, StringSplitOptions.RemoveEmptyEntries));
@@ -44,7 +51,7 @@ namespace MediaDBwpf.Metadata
         public MetaData()
         { }
 
-        public Image Thumbnail
+        public BitmapImage Thumbnail
         {
             get
             {
@@ -60,7 +67,9 @@ namespace MediaDBwpf.Metadata
                     ShellFile file = ShellFile.FromFilePath(FilePath);
                     MemoryStream ms = new MemoryStream();
                     file.Thumbnail.Bitmap.Save(ms, ImageFormat.Jpeg);
-                    _thumbnail = Image.FromStream(ms);
+                    _thumbnail.BeginInit();
+                    _thumbnail.StreamSource = ms;
+                    _thumbnail.EndInit();
                     //dbaccess db = new dbaccess();
                     //db.UpdateItem(this);
                     if (this.Update != null)

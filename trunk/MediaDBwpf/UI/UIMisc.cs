@@ -33,19 +33,24 @@ namespace MediaDBwpf
             CreateEvents();
         }
         DataView dview = new DataView();
-        //VirtualList<MetaData> data;
+        
         private void BindListView()
         {
-            //data = new VirtualList<MetaData>(this);
-            dview = new DataView(DS.metacache);
-            dview.RowFilter = "id < 1000";
+            //VirtualList<MetaData> data = new VirtualList<MetaData>(this);
+            MetaDataList mdc = new MetaDataList();
+            foreach (DataRow r in DS.metacache)
+            {
+                mdc.Add(new MetaData(r));
+            }
+            //dview = new DataView(DS.metacache);
+            //dview.RowFilter = "id < 1000";
             
-           
+                      
             //dataGrid1.ItemsSource = dview;
             // dataGrid1.ItemsSource = dview;
             //listView1.DataContext = DS.Tables[0].DefaultView;
             //listView1.ItemsSource = DS.Tables[0].DefaultView;
-            listView1.ItemsSource = dview;
+            listView1.ItemsSource = mdc;
             //listView1.DataContext = dview;
             
         }

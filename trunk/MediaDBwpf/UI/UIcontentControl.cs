@@ -86,7 +86,9 @@ namespace MediaDBwpf
 
                 if (m.Thumbnail != null)
                 {
-                    MemoryStream ms = new MemoryStream(); m._thumbnail.Save(ms, ImageFormat.Jpeg);
+                    MemoryStream ms = new MemoryStream();
+                    //m._thumbnail.Save(ms, ImageFormat.Jpeg);
+                    ms = (MemoryStream)m._thumbnail.StreamSource;
                     DS.metacache.AddmetacacheRow(m.Hash, m.FilePath, ms.ToArray(), m.tagstring, m.peoplestring);
                 }
                 else

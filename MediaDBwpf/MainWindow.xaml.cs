@@ -13,6 +13,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using MediaDBwpf.Metadata;
 using System.IO;
+using System.Globalization;
 
 namespace MediaDBwpf
 {
@@ -33,6 +34,12 @@ namespace MediaDBwpf
             
         }
 
+        private void button1_Click(object sender, RoutedEventArgs e)
+        {
+            dview.RowFilter = null;
+        }
+
+        
 
        
      

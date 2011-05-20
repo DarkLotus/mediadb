@@ -7,6 +7,10 @@ using System.Windows.Controls;
 using MediaDBwpf.Metadata;
 using MediaDBwpf.Database.Metadata;
 using System.IO;
+using System.Windows.Data;
+using MediaDBwpf.UI;
+using System.Data;
+using DevZest.Windows.DataVirtualization;
 namespace MediaDBwpf
 {
     public partial class MainWindow : Window
@@ -14,14 +18,38 @@ namespace MediaDBwpf
 
         void ProgramOpen()
         {
-            dataGridMainWindow.AutoGenerateColumns = true;
-            if (File.Exists("config.xml")) { Appdata = UI.AppData.Deserialize(); } else { Appdata = new UI.AppData();  }
-            if (File.Exists("cache.db")) { RefreshFileList();}
-            else { db.CreateDB(); RefreshFileList(); }
             
-           // dataGridMainWindow.ItemsSource = DS.Tables.AsQueryable();
+            if (File.Exists("config.xml")) { Appdata = UI.AppData.Deserialize(); } else { Appdata = new UI.AppData();  }
+            //if (File.Exists("cache.db")) { RefreshFileList();}
+            //else { db.CreateDB(); RefreshFileList(); }
+            try { RefreshFileList(); }
+            catch (Exception e)
+            {
+               string s = e.InnerException.Message;
+            }
+            
+            BindListView();
+           
             CreateEvents();
         }
+        DataView dview = new DataView();
+        //VirtualList<MetaData> data;
+        private void BindListView()
+        {
+            //data = new VirtualList<MetaData>(this);
+            dview = new DataView(DS.metacache);
+            dview.RowFilter = "id < 1000";
+            
+           
+            //dataGrid1.ItemsSource = dview;
+            // dataGrid1.ItemsSource = dview;
+            //listView1.DataContext = DS.Tables[0].DefaultView;
+            //listView1.ItemsSource = DS.Tables[0].DefaultView;
+            listView1.ItemsSource = dview;
+            //listView1.DataContext = dview;
+            
+        }
+
     }
 
     public class SelectedItems

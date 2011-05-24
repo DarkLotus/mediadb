@@ -74,11 +74,13 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Data.Linq" />
     <Reference Include="System.Data.SQLite, Version=1.0.70.0, Culture=neutral, PublicKeyToken=db937bc2d44ff139, processorArchitecture=MSIL">
       <HintPath>..\..\..\..\..\..\..\Program Files\System.Data.SQLite\bin\System.Data.SQLite.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System.Data.SqlServerCe, Version=3.5.1.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL" />
+    <Reference Include="System.Data.SqlXml" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Transactions" />
     <Reference Include="System.Windows.Forms" />
@@ -112,6 +114,8 @@
     </Compile>
     <Compile Include="Database\Metadata\SQL.cs" />
     <Compile Include="UI\AppData.cs" />
+    <Compile Include="UI\autotextbox\AutoCompleteEntry.cs" />
+    <Compile Include="UI\autotextbox\AutoCompleteTextBox.xaml.cs" />
     <Compile Include="UI\DataBinding.cs" />
     <Compile Include="UI\mylistview.cs" />
     <Compile Include="UI\Options.xaml.cs">
@@ -139,6 +143,10 @@
     <Page Include="themes\Dictionary1.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UI\autotextbox\AutoCompleteTextBox.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="UI\Options.xaml">
       <SubType>Designer</SubType>

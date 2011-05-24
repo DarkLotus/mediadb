@@ -946,7 +946,7 @@ namespace MediaDBwpf.Database.mediacacheDataSetTableAdapters {
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "4.0.0.0")]
         private void InitCommandCollection() {
-            this._commandCollection = new global::System.Data.SqlServerCe.SqlCeCommand[2];
+            this._commandCollection = new global::System.Data.SqlServerCe.SqlCeCommand[3];
             this._commandCollection[0] = new global::System.Data.SqlServerCe.SqlCeCommand();
             this._commandCollection[0].Connection = this.Connection;
             this._commandCollection[0].CommandText = "SELECT [hash], [filepath], [thumb], [tags], [people], [id] FROM [metacache]";
@@ -961,6 +961,17 @@ namespace MediaDBwpf.Database.mediacacheDataSetTableAdapters {
             this._commandCollection[1].Parameters.Add(new global::System.Data.SqlServerCe.SqlCeParameter("@thumb", global::System.Data.SqlDbType.Image, 0, global::System.Data.ParameterDirection.Input, true, 0, 0, "thumb", global::System.Data.DataRowVersion.Current, null));
             this._commandCollection[1].Parameters.Add(new global::System.Data.SqlServerCe.SqlCeParameter("@tags", global::System.Data.SqlDbType.NVarChar, 1000, global::System.Data.ParameterDirection.Input, true, 0, 0, "tags", global::System.Data.DataRowVersion.Current, null));
             this._commandCollection[1].Parameters.Add(new global::System.Data.SqlServerCe.SqlCeParameter("@people", global::System.Data.SqlDbType.NVarChar, 256, global::System.Data.ParameterDirection.Input, true, 0, 0, "people", global::System.Data.DataRowVersion.Current, null));
+            this._commandCollection[2] = new global::System.Data.SqlServerCe.SqlCeCommand();
+            this._commandCollection[2].Connection = this.Connection;
+            this._commandCollection[2].CommandText = "UPDATE [metacache] SET [hash] = @hash, [filepath] = @filepath, [thumb] = @thumb, " +
+                "[tags] = @tags, [people] = @people WHERE (([id] = @id))";
+            this._commandCollection[2].CommandType = global::System.Data.CommandType.Text;
+            this._commandCollection[2].Parameters.Add(new global::System.Data.SqlServerCe.SqlCeParameter("@hash", global::System.Data.SqlDbType.NVarChar, 256, global::System.Data.ParameterDirection.Input, true, 0, 0, "hash", global::System.Data.DataRowVersion.Current, null));
+            this._commandCollection[2].Parameters.Add(new global::System.Data.SqlServerCe.SqlCeParameter("@filepath", global::System.Data.SqlDbType.NVarChar, 512, global::System.Data.ParameterDirection.Input, true, 0, 0, "filepath", global::System.Data.DataRowVersion.Current, null));
+            this._commandCollection[2].Parameters.Add(new global::System.Data.SqlServerCe.SqlCeParameter("@thumb", global::System.Data.SqlDbType.Image, 0, global::System.Data.ParameterDirection.Input, true, 0, 0, "thumb", global::System.Data.DataRowVersion.Current, null));
+            this._commandCollection[2].Parameters.Add(new global::System.Data.SqlServerCe.SqlCeParameter("@tags", global::System.Data.SqlDbType.NVarChar, 1000, global::System.Data.ParameterDirection.Input, true, 0, 0, "tags", global::System.Data.DataRowVersion.Current, null));
+            this._commandCollection[2].Parameters.Add(new global::System.Data.SqlServerCe.SqlCeParameter("@people", global::System.Data.SqlDbType.NVarChar, 256, global::System.Data.ParameterDirection.Input, true, 0, 0, "people", global::System.Data.DataRowVersion.Current, null));
+            this._commandCollection[2].Parameters.Add(new global::System.Data.SqlServerCe.SqlCeParameter("@id", global::System.Data.SqlDbType.Int, 4, global::System.Data.ParameterDirection.Input, true, 0, 0, "id", global::System.Data.DataRowVersion.Original, null));
         }
         
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
@@ -1177,6 +1188,60 @@ namespace MediaDBwpf.Database.mediacacheDataSetTableAdapters {
             else {
                 command.Parameters[4].Value = ((string)(people));
             }
+            global::System.Data.ConnectionState previousConnectionState = command.Connection.State;
+            if (((command.Connection.State & global::System.Data.ConnectionState.Open) 
+                        != global::System.Data.ConnectionState.Open)) {
+                command.Connection.Open();
+            }
+            int returnValue;
+            try {
+                returnValue = command.ExecuteNonQuery();
+            }
+            finally {
+                if ((previousConnectionState == global::System.Data.ConnectionState.Closed)) {
+                    command.Connection.Close();
+                }
+            }
+            return returnValue;
+        }
+        
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "4.0.0.0")]
+        [global::System.ComponentModel.Design.HelpKeywordAttribute("vs.data.TableAdapter")]
+        [global::System.ComponentModel.DataObjectMethodAttribute(global::System.ComponentModel.DataObjectMethodType.Update, false)]
+        public virtual int UpdateQuery(string hash, string filepath, byte[] thumb, string tags, string people, int id) {
+            global::System.Data.SqlServerCe.SqlCeCommand command = this.CommandCollection[2];
+            if ((hash == null)) {
+                throw new global::System.ArgumentNullException("hash");
+            }
+            else {
+                command.Parameters[0].Value = ((string)(hash));
+            }
+            if ((filepath == null)) {
+                throw new global::System.ArgumentNullException("filepath");
+            }
+            else {
+                command.Parameters[1].Value = ((string)(filepath));
+            }
+            if ((thumb == null)) {
+                command.Parameters[2].Value = global::System.DBNull.Value;
+            }
+            else {
+                command.Parameters[2].Value = ((byte[])(thumb));
+            }
+            if ((tags == null)) {
+                command.Parameters[3].Value = global::System.DBNull.Value;
+            }
+            else {
+                command.Parameters[3].Value = ((string)(tags));
+            }
+            if ((people == null)) {
+                command.Parameters[4].Value = global::System.DBNull.Value;
+            }
+            else {
+                command.Parameters[4].Value = ((string)(people));
+            }
+            command.Parameters[5].Value = ((int)(id));
             global::System.Data.ConnectionState previousConnectionState = command.Connection.State;
             if (((command.Connection.State & global::System.Data.ConnectionState.Open) 
                         != global::System.Data.ConnectionState.Open)) {

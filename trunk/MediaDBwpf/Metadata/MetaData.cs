@@ -35,6 +35,30 @@ namespace MediaDBwpf.Metadata
             FilePath = row.ItemArray[1].ToString();
             Hash = row.ItemArray[0].ToString();
             Byte[] img = (byte[])row.ItemArray[2];
+            if ((img != null) && (img.Count() > 0))
+            {
+                try
+                {
+                    _thumbnail = new BitmapImage();
+                    _thumbnail.BeginInit();
+                    _thumbnail.StreamSource = new MemoryStream(img);
+                    _thumbnail.EndInit();
+                }
+                catch { _thumbnail = null; }
+            }
+
+            Tags.UnionWith(row.ItemArray[3].ToString().Split(split, StringSplitOptions.RemoveEmptyEntries));
+            People.UnionWith(row.ItemArray[4].ToString().Split(split, StringSplitOptions.RemoveEmptyEntries));
+            // Hash = CalculateMD5Hash(Filename + (new FileInfo(FilePath).Length));
+            //Thumbnail();
+        }
+        public MetaData(MediaDBwpf.Database.mediacacheDataSet.metacacheRow row)
+        {
+            string[] split = { "," };
+            id = Convert.ToInt32(row.ItemArray[5]);
+            FilePath = row.ItemArray[1].ToString();
+            Hash = row.ItemArray[0].ToString();
+            Byte[] img = (byte[])row.ItemArray[2];
             if ((img != null) && (img.Count() > 0)) { try {
                 _thumbnail = new BitmapImage();
                 _thumbnail.BeginInit();
@@ -50,7 +74,30 @@ namespace MediaDBwpf.Metadata
         }
         public MetaData()
         { }
-
+        public Database.mediacacheDataSet.metacacheRow GetasRow()
+        {
+            Database.mediacacheDataSet ds = new Database.mediacacheDataSet();
+            Database.mediacacheDataSet.metacacheRow mr = ds.metacache.NewmetacacheRow();
+            mr.filepath = this.FilePath;
+            mr.hash = this.Hash;
+            mr.id = this.id;
+            mr.people = this.peoplestring;
+            mr.tags = this.tagstring;
+            MemoryStream ms = new MemoryStream();
+            ms = (MemoryStream)_thumbnail.StreamSource;
+            mr.thumb = ms.ToArray();
+            return mr;
+        }
+        public byte[] ThumbnailasByte
+        {
+            get
+            {
+                MemoryStream ms = new MemoryStream();
+                ms = (MemoryStream)_thumbnail.StreamSource;
+                return ms.ToArray();
+            }
+            set { }
+        }
         public BitmapImage Thumbnail
         {
             get
@@ -66,17 +113,19 @@ namespace MediaDBwpf.Metadata
                 {
                     ShellFile file = ShellFile.FromFilePath(FilePath);
                     MemoryStream ms = new MemoryStream();
-                    file.Thumbnail.Bitmap.Save(ms, ImageFormat.Jpeg);
+                    file.Thumbnail.Bitmap.Save(ms, ImageFormat.Bmp);
+                    _thumbnail = new BitmapImage();
                     _thumbnail.BeginInit();
                     _thumbnail.StreamSource = ms;
                     _thumbnail.EndInit();
                     //dbaccess db = new dbaccess();
                     //db.UpdateItem(this);
+
+                    return _thumbnail;
                     if (this.Update != null)
                     {
                         this.Update(this, new EventArgs());
                     }
-                    return _thumbnail;
                 }
             }
             set { }

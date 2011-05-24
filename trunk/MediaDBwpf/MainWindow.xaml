@@ -5,6 +5,7 @@
         xmlns:t="clr-namespace:MediaDBwpf.Metadata"
         xmlns:l="clr-namespace:MediaDBwpf.UI"
             xmlns:dz="clr-namespace:DevZest.Windows.DataVirtualization;assembly=DevZest.DataVirtualization"
+        xmlns:ACTB="clr-namespace:WPFAutoCompleteTextbox"
         DataContext="{Binding RelativeSource={RelativeSource Self}}"
     >
     <Window.Resources>
@@ -41,11 +42,11 @@
         <DataTemplate x:Key="iconTemplate">
             <Grid>
                 <StackPanel Height="100" Width="100">
-                    <Image Source="{Binding Path=Thumbnail}" Margin="2" Height="75" Width="75"/>
-                    <TextBlock DockPanel.Dock="Top" Text="{Binding Path=Filename, Converter={StaticResource filenameConverter}}" 
+                    <Image Source="{Binding Path=thumb}" Margin="2" Height="75" Width="75"/>
+                    <TextBlock DockPanel.Dock="Top" Text="{Binding Path=filepath, Converter={StaticResource filenameConverter}}" 
                      FontSize="13" HorizontalAlignment="Left" 
                      Margin="0,0,0,1" />
-                    <TextBlock Text="{Binding Path=Tags}" FontSize="9" 
+                    <TextBlock Text="{Binding Path=tags}" FontSize="9" 
                      HorizontalAlignment="Left" Margin="0,0,0,1" />
                 </StackPanel>
                 </Grid> 
@@ -122,13 +123,15 @@
         <TabControl Grid.Column="3" HorizontalAlignment="Stretch" Margin="0,4,0,0" Name="tabControl1" VerticalAlignment="Stretch" Width="Auto" Grid.Row="4" UseLayoutRounding="True">
             <TabItem Header="MetaData" Name="tabItem1">
                 <Grid>
-                    <Image Height="150" HorizontalAlignment="Left" Margin="45,23,0,0" Name="image1" Stretch="Fill" VerticalAlignment="Top" Width="200" />
+                    <ACTB:AutoCompleteTextBox Height="23" HorizontalAlignment="Left" Margin="72,6,0,0" x:Name="txttaginput" VerticalAlignment="Top" Width="108" DelayTime="500" Threshold="2" />
+                    <ListBox Height="91" HorizontalAlignment="Left" Margin="186,6,0,0" Name="lsTagsonItem" VerticalAlignment="Top" Width="120" />
+                    <Label Content="Add Tag" Height="28" HorizontalAlignment="Left" Margin="6,6,0,0" Name="label1" VerticalAlignment="Top" Width="69" />
                 </Grid>
             </TabItem>
             <TabItem Header="Bulk Tag" />
             <TabItem IsSelected="False" />
         </TabControl>
-        <Button Content="Play/Pause" Grid.Column="3" Height="23" Margin="86,7,0,0" Name="button2" VerticalAlignment="Top" Grid.Row="3" HorizontalAlignment="Left" Width="75" />
+        <Button Content="Play/Pause" Grid.Column="3" Height="23" Margin="86,7,0,0" Name="btnPlayPause" VerticalAlignment="Top" Grid.Row="3" HorizontalAlignment="Left" Width="75" Click="btnPlayPause_Click" />
         <Button Content="Grab Face" Grid.Column="3" Height="23" Margin="5,7,0,0" Name="button1" VerticalAlignment="Top" HorizontalAlignment="Left" Width="75" Grid.Row="3" Click="button1_Click" />
         <ListView Grid.Column="2" Grid.Row="1" HorizontalAlignment="Stretch" Margin="0,0,0,2" Name="listView1" VerticalAlignment="Stretch" dz:GridViewSort.AutoSort="True"
             dz:VirtualListLoadingIndicator.IsAttached="True"

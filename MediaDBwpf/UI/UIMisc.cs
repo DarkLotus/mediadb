@@ -27,33 +27,18 @@ namespace MediaDBwpf
             {
                string s = e.InnerException.Message;
             }
+            //UpdateUIDataGrid();
+            PopulateMediaList();
             
-            BindListView();
-           
             CreateEvents();
+            Vlccontrol.Child = vlccont;
         }
-        DataView dview = new DataView();
+
+        EasyVLC.VlcUserControl vlccont = new EasyVLC.VlcUserControl();
+
+        MetaDataList MDL = new MetaDataList();
         
-        private void BindListView()
-        {
-            //VirtualList<MetaData> data = new VirtualList<MetaData>(this);
-            MetaDataList mdc = new MetaDataList();
-            foreach (DataRow r in DS.metacache)
-            {
-                mdc.Add(new MetaData(r));
-            }
-            //dview = new DataView(DS.metacache);
-            //dview.RowFilter = "id < 1000";
-            
-                      
-            //dataGrid1.ItemsSource = dview;
-            // dataGrid1.ItemsSource = dview;
-            //listView1.DataContext = DS.Tables[0].DefaultView;
-            //listView1.ItemsSource = DS.Tables[0].DefaultView;
-            listView1.ItemsSource = mdc;
-            //listView1.DataContext = dview;
-            
-        }
+
 
     }
 
@@ -67,13 +52,22 @@ namespace MediaDBwpf
         public delegate void ItemChanged(Metadata.MetaData m);
         public event TagListChanged SelectedTagListItemChanged;
         public event ItemChanged SelectedItemChanged;
-
+        public DataRowView SelecteditemDView;
         public SelectedItems()
         {
             SelectedTagListItemIsPerson = false;
             SelectedItemInTagList = "All";
         }
-
+        // Phase out MetaData selected item replace with DataRowView
+        public DataRowView SelectedItemDview
+        {
+            get {
+                return SelecteditemDView;
+                }
+            set {
+                SelecteditemDView = value;
+                }
+        }
         public void SetSelectedTag(string tag, bool IsPerson)
         {
             SelectedTagListItemIsPerson = IsPerson;
@@ -99,6 +93,20 @@ namespace MediaDBwpf
         public MetaData SelectedItem()
         {
             return SelectedMetaData;
+        }
+
+        internal string GetSelectedTagasfilter()
+        {
+            string s = SelectedItemInTagList;
+            if (s == "All") { s = "*"; }
+            if (this.SelectedTagListItemIsPerson)
+            {
+                return "people like '*" + s + "'";
+            }
+            else
+            {
+                return "tags like '*" + s + "'";
+            }
         }
     }
 }

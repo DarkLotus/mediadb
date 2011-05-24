@@ -16,6 +16,8 @@ using System.Windows.Media;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Collections;
+using MediaDBwpf.Database;
+using System.Data;
 namespace MediaDBwpf
 {
     public class MetaDataList : IList<MetaData>
@@ -23,6 +25,8 @@ namespace MediaDBwpf
         #region Private Variables
 
         private List<MetaData> _Strings = new List<MetaData>();
+        private mediacacheDataSet DS;
+        private SelectedItems Selecteditems;
 
         #endregion
 
@@ -32,17 +36,18 @@ namespace MediaDBwpf
         {
             get
             {
-                return _Strings[index];
+                return new MetaData((Database.mediacacheDataSet.metacacheRow)DS.metacache.Select(Selecteditems.GetSelectedTagasfilter())[index]);//_Strings[index];
             }
             set
             {
-                _Strings[index] = value;
+                DS.metacache.Select(Selecteditems.GetSelectedTagasfilter())[index].ItemArray = value.GetasRow().ItemArray;
+                //_Strings[index] = value;
             }
         }
 
         public void Add(MetaData item)
         {
-            _Strings.Add(item);
+            DS.metacache.AddmetacacheRow(item.GetasRow());//_Strings.Add(item);
         }
 
         public void Clear()
@@ -52,7 +57,7 @@ namespace MediaDBwpf
 
         public bool Contains(MetaData item)
         {
-            return _Strings.Contains(item);
+            return DS.metacache.Select(Selecteditems.GetSelectedTagasfilter()).Contains(item.GetasRow());//_Strings.Contains(item);
         }
 
         public void CopyTo(MetaData[] array)
@@ -69,13 +74,21 @@ namespace MediaDBwpf
         {
             get
             {
-                return _Strings.Count;
+                return DS.metacache.Select(Selecteditems.GetSelectedTagasfilter()).Count();//_Strings.Count;
             }
         }
 
         public IEnumerator<MetaData> GetEnumerator()
         {
-            return _Strings.GetEnumerator();
+            foreach (DataRow mr in DS.metacache.Select(Selecteditems.GetSelectedTagasfilter()))
+            {
+                yield return new MetaData((MediaDBwpf.Database.mediacacheDataSet.metacacheRow)mr);
+            }
+            //foreach (Database.mediacacheDataSet.metacacheRow mr in DS.metacache)
+            //{
+           //     yield return new MetaData(mr);
+            //}
+            //return _Strings.GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()
@@ -124,6 +137,14 @@ namespace MediaDBwpf
             _Strings = InitialStringList;
         }
 
+
+        public MetaDataList(mediacacheDataSet DS, SelectedItems Selecteditems)
+        {
+            // TODO: Complete member initialization
+            this.DS = DS;
+            this.Selecteditems = Selecteditems;
+        }
+
         #endregion
 
        
@@ -133,14 +154,14 @@ namespace MediaDBwpf
 
     public class MetaDataCollection : System.Collections.CollectionBase
     {
-        private Database.mediacacheDataSet DS;
+        mediacacheDataSet DS = new mediacacheDataSet();
 
         public MetaDataCollection()
         {
 
         }
 
-        public MetaDataCollection(Database.mediacacheDataSet DS)
+        public MetaDataCollection(mediacacheDataSet DS)
         {
             // TODO: Complete member initialization
             this.DS = DS;

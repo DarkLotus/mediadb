@@ -11,8 +11,8 @@ namespace MediaDBwpf.UI
         // load all the crap we care about between sessions from xml?
         public string[] FileExtensions = { "*.avi", "*.mpg", "*.mpeg", "*.wmv" };
         public HashSet<string> FilePaths = new HashSet<string>();
-        public bool scanSubFolders = true;
-        
+        public bool bScanSubFolders = true;
+        public bool bCacheThumbs = true;
         public HashSet<string> KnownTags = new HashSet<string>();
         public HashSet<string> KnownPeople = new HashSet<string>();
         private const string file = "config.xml";

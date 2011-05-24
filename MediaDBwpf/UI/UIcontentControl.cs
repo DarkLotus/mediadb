@@ -13,6 +13,9 @@ using MediaDBwpf.Database;
 using MediaDBwpf.Database.mediacacheDataSetTableAdapters;
 using System.Drawing.Imaging;
 using DevZest.Windows.DataVirtualization;
+using WPFAutoCompleteTextbox;
+using System.Linq;
+using System.Xml.Linq;
 namespace MediaDBwpf
 {
     public partial class MainWindow : Window
@@ -33,7 +36,7 @@ namespace MediaDBwpf
             foreach (string F in Appdata.FilePaths) // enumerate base folders
             {
                 IEnumerable<string> filelist;
-                if (Appdata.scanSubFolders)
+                if (Appdata.bScanSubFolders)
                 {
                     filelist = GetFiles(F, Appdata.FileExtensions, SearchOption.AllDirectories);
                 }
@@ -70,12 +73,59 @@ namespace MediaDBwpf
             //lsFileBrowser.Refresh();
             //MediaCache = db.GetItemsbyIDindex(0, 15);
             UpdateUIElementsfromCache();
-            UpdateUIDataGrid();
-
+            
+            
 
             //toolStripStatusLabel1.Text = mediacnt + " Files Cached." + newmediacnt + " New Files.";
             //db.CleanDuplicateHashes();
+            CleanNonExistantFiles();
             return;
+        }
+
+        private void PopulateMediaList()
+        {
+            string filter = null;
+            if ((Selecteditems.GetSelectedTag() != "All") && (Selecteditems.GetSelectedTag() != "People") && (Selecteditems.GetSelectedTag() != "Tags") && (Selecteditems.GetSelectedTag() != "Untagged"))
+            {
+                filter = Selecteditems.GetSelectedTagasfilter();
+                DS.Clear();
+                mdta.Fill(DS.metacache);
+                dv = new DataView(DS.metacache);
+                dv.RowFilter = filter;
+                listView1.ItemsSource = dv;
+            }
+            else if (Selecteditems.GetSelectedTag() == "All")
+            {
+                DS.Clear();
+                mdta.Fill(DS.metacache);
+                dv = new DataView(DS.metacache);
+                listView1.ItemsSource = dv;
+            }
+            else if (Selecteditems.GetSelectedTag() == "Untagged")
+            {
+                DS.Clear();
+                mdta.Fill(DS.metacache);
+                dv = new DataView(DS.metacache);
+                dv.RowFilter = "tags like ''";
+                listView1.ItemsSource = dv;
+            }
+
+        }
+        private void CleanNonExistantFiles()
+        {
+            List<MediaDBwpf.Database.mediacacheDataSet.metacacheRow> removeme = new List<MediaDBwpf.Database.mediacacheDataSet.metacacheRow>();
+            foreach (MediaDBwpf.Database.mediacacheDataSet.metacacheRow r in DS.metacache)
+            {
+                if (!File.Exists(r.filepath))
+                {
+                    removeme.Add(r);     
+                }
+            }
+            foreach (var r in removeme)
+            {
+                DS.metacache.RemovemetacacheRow(r);
+            }
+            mdta.Update(DS.metacache);
         }
 
         private void additems(List<MetaData> temp)
@@ -87,7 +137,6 @@ namespace MediaDBwpf
                 if (m.Thumbnail != null)
                 {
                     MemoryStream ms = new MemoryStream();
-                    //m._thumbnail.Save(ms, ImageFormat.Jpeg);
                     ms = (MemoryStream)m._thumbnail.StreamSource;
                     DS.metacache.AddmetacacheRow(m.Hash, m.FilePath, ms.ToArray(), m.tagstring, m.peoplestring);
                 }
@@ -101,11 +150,10 @@ namespace MediaDBwpf
             mdta.Update(DS);
         }
 
-        
-
         mediacacheDataSet DS = new mediacacheDataSet();
         ObservableCollection<MetaData> MD = new ObservableCollection<MetaData>();
         metacacheTableAdapter mdta = new metacacheTableAdapter();
+        DataView dv;
         private void UpdateUIDataGrid()
         {
             string tag;
@@ -114,11 +162,13 @@ namespace MediaDBwpf
             //DS.Clear();
            //MD = db.GetItems(SqliteMetaData._Tag.tags, Selecteditems.GetSelectedTag(), SqliteMetaData.Datatograb.all);
             //DS = db.GetDSItems(SqliteMetaData._Tag.tags, Selecteditems.GetSelectedTag(), SqliteMetaData.Datatograb.all);
-
+            System.Diagnostics.Stopwatch t = new System.Diagnostics.Stopwatch();
+            t.Start();
             DS.Clear();
             mdta.Fill(DS.metacache);
             //DS.metacache.metacacheRowChanged += new mediacacheDataSet.metacacheRowChangeEventHandler(metacache_metacacheRowChanged);
-
+            t.Stop();
+            MessageBox.Show("time to add:" + t.ElapsedMilliseconds);
            /* System.Diagnostics.Stopwatch t = new System.Diagnostics.Stopwatch();
             t.Start();
             for (int i = 0; i < DS.metacache.Count - 1; i++)
@@ -149,8 +199,18 @@ namespace MediaDBwpf
         {
             return searchPatterns.AsParallel().SelectMany(searchPattern => Directory.EnumerateFiles(path, searchPattern, searchOption));
         }
+
+        private void PopulateItemsDetails()
+        {
+            lsTagsonItem.Items.Clear();
+            foreach (string s in Selecteditems.SelectedItem().Tags)
+            {
+                lsTagsonItem.Items.Add(s); 
+            }
+        }
         private void UpdateUIElementsfromCache()
         {
+            // Populate tag tree view
             treeview_TagSelector.Items.Clear();
             TreeViewItem a = new TreeViewItem();
             a.Name = "Alll";
@@ -164,15 +224,24 @@ namespace MediaDBwpf
             TreeViewItem x = new TreeViewItem();
             x.Name = "Untagged";
             x.Header = "Untagged";
-            foreach (string s in Appdata.KnownTags) { TreeViewItem st = new TreeViewItem(); st.Header = s; st.Name = s; st.Tag = "Tag"; t.Items.Add(st); }
+            foreach (string s in Appdata.KnownTags) { TreeViewItem st = new TreeViewItem(); st.Header = s; st.Tag = "Tag"; t.Items.Add(st); }
 
-            foreach (string s in Appdata.KnownPeople) { TreeViewItem st = new TreeViewItem(); st.Header = s; st.Name = s; st.Tag = "People"; t.Items.Add(st); }
-            //a.Items.Add(x);
-            //a.Items.Add(p);
-            //a.Items.Add(t);
-            treeview_TagSelector.Items.Add(p);
-            treeview_TagSelector.Items.Add(t);
-            treeview_TagSelector.Items.Add(x);
+            foreach (string s in Appdata.KnownPeople) { TreeViewItem st = new TreeViewItem(); st.Header = s; st.Tag = "People"; t.Items.Add(st); }
+            a.Items.Add(x);
+            a.Items.Add(p);
+            a.Items.Add(t);
+            //treeview_TagSelector.Items.Add(p);
+            //treeview_TagSelector.Items.Add(t);
+            //treeview_TagSelector.Items.Add(x);
+            treeview_TagSelector.Items.Add(a);
+            // populate auto completes
+            foreach (string s in Appdata.KnownTags)
+            {
+                AutoCompleteEntry ac = new AutoCompleteEntry(s,s,s,s);
+                txttaginput.AddItem(ac);
+            }
+            
+
         }
        
         public class treetag

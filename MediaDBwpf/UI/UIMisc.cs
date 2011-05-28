@@ -18,8 +18,8 @@ namespace MediaDBwpf
 
         void ProgramOpen()
         {
-            
-            if (File.Exists("config.xml")) { Appdata = UI.AppData.Deserialize(); } else { Appdata = new UI.AppData();  }
+
+            if (File.Exists("config.xml")) { Appdata = UI.AppData.Deserialize(); } else { Appdata = new UI.AppData(); Appdata.Serialize(); }
             //if (File.Exists("cache.db")) { RefreshFileList();}
             //else { db.CreateDB(); RefreshFileList(); }
             try { RefreshFileList(); }
@@ -101,11 +101,11 @@ namespace MediaDBwpf
             if (s == "All") { s = "*"; }
             if (this.SelectedTagListItemIsPerson)
             {
-                return "people like '*" + s + "'";
+                return "people like '*" + s + "*'";
             }
             else
             {
-                return "tags like '*" + s + "'";
+                return "tags like '*" + s + "*'";
             }
         }
     }

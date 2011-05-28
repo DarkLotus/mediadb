@@ -28,7 +28,10 @@ namespace MediaDBwpf
                     
             //Called when Program first loads and when a new folder is added
             DS.EnforceConstraints = false;
+            DS.Clear();
             mdta.Fill(DS.metacache);
+            dv = new DataView(DS.metacache);
+            listView1.ItemsSource = dv;
             //lsFileBrowser.VirtualListSize = 0;
             int newmediacnt = 0;
             List<MetaData> temp = new List<MetaData>();
@@ -84,30 +87,28 @@ namespace MediaDBwpf
 
         private void PopulateMediaList()
         {
+            // need to change this
+            // on startup/file change lets populate a dataset. then when we change views etc we just change the view.
             string filter = null;
             if ((Selecteditems.GetSelectedTag() != "All") && (Selecteditems.GetSelectedTag() != "People") && (Selecteditems.GetSelectedTag() != "Tags") && (Selecteditems.GetSelectedTag() != "Untagged"))
             {
                 filter = Selecteditems.GetSelectedTagasfilter();
-                DS.Clear();
-                mdta.Fill(DS.metacache);
                 dv = new DataView(DS.metacache);
                 dv.RowFilter = filter;
+                
                 listView1.ItemsSource = dv;
             }
             else if (Selecteditems.GetSelectedTag() == "All")
             {
-                DS.Clear();
-                mdta.Fill(DS.metacache);
                 dv = new DataView(DS.metacache);
+                dv.RowFilter = null;
                 listView1.ItemsSource = dv;
             }
             else if (Selecteditems.GetSelectedTag() == "Untagged")
             {
-                DS.Clear();
-                mdta.Fill(DS.metacache);
-                dv = new DataView(DS.metacache);
-                dv.RowFilter = "tags like ''";
+
                 listView1.ItemsSource = dv;
+                dv.RowFilter = "tags like ''";
             }
 
         }
@@ -202,11 +203,14 @@ namespace MediaDBwpf
 
         private void PopulateItemsDetails()
         {
-            lsTagsonItem.Items.Clear();
-            foreach (string s in Selecteditems.SelectedItem().Tags)
-            {
-                lsTagsonItem.Items.Add(s); 
-            }
+            //lsTagsonItem.Items.Clear();
+            lsTagsonItem.ItemsSource = Static_Helpers.GetTreefromTagList(Selecteditems.SelectedItem()._Tag);
+            //lsTagsonItem.Items.Add(Static_Helpers.GetTreeFromTag(Selecteditems.SelectedItem()._Tag));
+           // foreach (Tag t in Selecteditems.SelectedItem()._Tag.Children)
+           // {
+               // lsTagsonItem.Items.Add(t);
+           // }
+           
         }
         private void UpdateUIElementsfromCache()
         {
@@ -224,7 +228,21 @@ namespace MediaDBwpf
             TreeViewItem x = new TreeViewItem();
             x.Name = "Untagged";
             x.Header = "Untagged";
-            foreach (string s in Appdata.KnownTags) { TreeViewItem st = new TreeViewItem(); st.Header = s; st.Tag = "Tag"; t.Items.Add(st); }
+            t.ItemsSource = Appdata.GetKnownTagsAsTree();
+            /*foreach (string s in Appdata.KnownTags) {
+                if (s.Contains("\\"))
+                {
+                    TreeViewItem st = new TreeViewItem(); st.Header = s.Split("\\".ToCharArray()).First(); st.Tag = "Tag";
+                    TreeViewItem ts = new TreeViewItem(); ts.Header = s.Split("\\".ToCharArray()).Last(); st.Tag = "Tag";
+                    st.Items.Add(ts);
+                    t.Items.Add(st);
+                }
+                else
+                {
+                    TreeViewItem st = new TreeViewItem(); st.Header = s; st.Tag = "Tag"; t.Items.Add(st);
+                }
+                
+            }*/
 
             foreach (string s in Appdata.KnownPeople) { TreeViewItem st = new TreeViewItem(); st.Header = s; st.Tag = "People"; t.Items.Add(st); }
             a.Items.Add(x);
@@ -235,7 +253,7 @@ namespace MediaDBwpf
             //treeview_TagSelector.Items.Add(x);
             treeview_TagSelector.Items.Add(a);
             // populate auto completes
-            foreach (string s in Appdata.KnownTags)
+            foreach (string s in Appdata.GetKnownTagsAsStringList())
             {
                 AutoCompleteEntry ac = new AutoCompleteEntry(s,s,s,s);
                 txttaginput.AddItem(ac);

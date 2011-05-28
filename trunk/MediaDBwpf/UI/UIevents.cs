@@ -27,7 +27,18 @@ namespace MediaDBwpf
             txttaginput.KeyDown += new System.Windows.Input.KeyEventHandler(txttaginput_KeyDown);
         }
 
-
+                private void btnRemoveSelectedTag_Click(object sender, RoutedEventArgs e)
+        {
+            MetaData m = Selecteditems.SelectedItem();
+            if (lsTagsonItem.SelectedIndex > -1)
+            {
+                TreeViewItem tvi = (TreeViewItem)lsTagsonItem.SelectedItem;
+                Tag t = (Tag)tvi.Tag;
+                Selecteditems.SelectedItem().RemoveTag(t);// Tags.Remove(lsTagsonItem.SelectedItem.ToString());
+                Selecteditems.SelecteditemDView.Row["tags"] = Selecteditems.SelectedItem().tagstring;
+                mdta.UpdateQuery(m.Hash, m.FilePath, m.ThumbnailasByte, m.tagstring, m.peoplestring, m.id);
+            }
+        }
 
         void txttaginput_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
         {
@@ -36,15 +47,12 @@ namespace MediaDBwpf
             MetaData m = Selecteditems.SelectedItem();
                 if (e.Key == System.Windows.Input.Key.Enter)
             {
-                if (!Selecteditems.SelectedItem().Tags.Contains(txttaginput.Text))
-                {
-                    Selecteditems.SelectedItem().Tags.Add(txttaginput.Text);
+
+                    Selecteditems.SelectedItem().AddTag(Static_Helpers.GetSingleTagFromString(txttaginput.Text));
                     Selecteditems.SelecteditemDView.Row["tags"] = Selecteditems.SelectedItem().tagstring;
                     //mdta.Update(Selecteditems.SelectedItem().GetasRow());
                     mdta.UpdateQuery(m.Hash, m.FilePath, m.ThumbnailasByte, m.tagstring, m.peoplestring, m.id);
-                }
-                if (!Appdata.KnownTags.Contains(txttaginput.Text)) { Appdata.KnownTags.Add(txttaginput.Text); Appdata.Serialize(); }
-
+                    Appdata.AddKnownTag(Static_Helpers.GetSingleTagFromString(txttaginput.Text));
                 txttaginput.Text = "";
                 UpdateUIElementsfromCache();
             }
@@ -66,9 +74,11 @@ namespace MediaDBwpf
 
         void listView1_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
-            MetaData m = (MetaData)listView1.SelectedItem;
+            DataRowView dr = (DataRowView)listView1.SelectedItem;
+
+            MetaData m = new MetaData(dr.Row);
             System.Windows.Controls.Image i = (Image)e.OriginalSource;
-            if (i.Source == m.Thumbnail)
+            if (listView1.SelectedIndex != -1)
             {
                 vlccont.Play(m.FilePath, EasyVLC.VlcMediaType.FilePath);
                 //we clicked this item

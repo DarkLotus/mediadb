@@ -14,7 +14,6 @@ namespace MediaDBwpf.Metadata
     public class MetaData : IEquatable<MetaData>
     {
         public HashSet<string> People = new HashSet<string>();
-        public HashSet<string> Tags = new HashSet<string>();
         public string FilePath;
         public string Hash;
         public int id;
@@ -22,6 +21,60 @@ namespace MediaDBwpf.Metadata
         public BitmapImage _thumbnail = null;
         //public delegate void UpdateEventHandler(MetaData m);
         public event EventHandler Update;
+
+        public List<Tag> _Tag = new List<Tag>();
+        public void RemoveTag(string s)
+        {
+            Tag t = new Tag();
+            t.tag = s;
+            _Tag.Remove(t);
+        }
+        public void RemoveTag(Tag t)
+        {
+            if (t.Parent == null)
+            {
+                _Tag.Remove(t); return;
+            }
+            List<Tag> tagtree = new List<Tag>();
+            Tag temp = t;
+            while(temp.Parent != null) 
+            {
+                temp = temp.Parent;
+                tagtree.Add(temp);
+            }
+            for(int i = tagtree.Count - 1; i > 0;i--) {
+               Tag curtag = _Tag.Find(cur => cur.tag == tagtree[i].tag);//tag == tagtree[i]);           
+                if(curtag.Children.Contains(t)) {
+                    curtag.Children.Remove(t);
+                }
+            }
+            
+            
+        }
+        public void AddTag(Tag t)
+        {
+            if (_Tag == null) { _Tag = new List<Tag>(); }
+            _addtag(ref this._Tag, t);
+
+        }
+        private void _addtag(ref List<Tag> mylist, Tag addme)
+        {
+            if (mylist.Contains(addme)) { if (addme.Children.Count < 1) { return; } }
+            foreach (Tag t in mylist)
+            {
+                if (t == addme)
+                {
+                    _addtag(ref t.Children, addme.Children[0]);
+                }
+            }
+            // assume tag wasnt in list
+            mylist.Add(addme);
+            return;
+
+        }
+
+
+
         public MetaData(string filepath)
         {
             FilePath = filepath;
@@ -46,8 +99,12 @@ namespace MediaDBwpf.Metadata
                 }
                 catch { _thumbnail = null; }
             }
-
-            Tags.UnionWith(row.ItemArray[3].ToString().Split(split, StringSplitOptions.RemoveEmptyEntries));
+            if (!string.IsNullOrWhiteSpace(row.ItemArray[3].ToString()))
+            {
+                _Tag.AddRange(Static_Helpers.GetTagsfromtagString(row.ItemArray[3].ToString()));
+            }
+            
+            //Tags.UnionWith(row.ItemArray[3].ToString().Split(split, StringSplitOptions.RemoveEmptyEntries));
             People.UnionWith(row.ItemArray[4].ToString().Split(split, StringSplitOptions.RemoveEmptyEntries));
             // Hash = CalculateMD5Hash(Filename + (new FileInfo(FilePath).Length));
             //Thumbnail();
@@ -66,8 +123,8 @@ namespace MediaDBwpf.Metadata
                 _thumbnail.EndInit();
             } 
             catch { _thumbnail = null; } }
-            
-            Tags.UnionWith(row.ItemArray[3].ToString().Split(split, StringSplitOptions.RemoveEmptyEntries));
+
+            _Tag.AddRange(Static_Helpers.GetTagsfromtagString(row.ItemArray[3].ToString()));
             People.UnionWith(row.ItemArray[4].ToString().Split(split, StringSplitOptions.RemoveEmptyEntries));
            // Hash = CalculateMD5Hash(Filename + (new FileInfo(FilePath).Length));
             //Thumbnail();
@@ -133,12 +190,19 @@ namespace MediaDBwpf.Metadata
         }
         public string tagstring
         {
-            get {             string r = "";
+            get {
+                if (_Tag.Count == 0) { return null; }
+                string r = Static_Helpers.GetTagasstring(_Tag);
+                return r;
+                /*string r = "";
+                if (Tags.Count == 0) { return null; }
             foreach (string s in Tags)
             {
                 r = r + "," + s;
             }
-            return r; }
+            return r + ","; 
+            */
+            }
             set { }
 
         }
@@ -210,4 +274,66 @@ namespace MediaDBwpf.Metadata
             return hashTextual;//hashDigital ^ hashTextual;
         }
     }
+
+    public class Tag
+    {
+        public Tag Parent;
+        public List<Tag> Children = new List<Tag>();
+        public string tag;
+        public Tag() {}
+        public override string ToString()
+        {
+            return tag;
+        }
+
+        public string ParentasString()
+        {
+            if (this.Parent != null)
+            {
+                string s = this.Parent.tag;
+                if (this.Parent.ParentasString() != "") { s = this.Parent.ParentasString() + "\\" + this.Parent.tag; }
+                return s;
+            }
+            return "";
+        }
+        public Tag findbase()
+        {
+            Tag temp = this;
+            while (temp.Parent != null)
+            {
+                temp = temp.Parent;
+            }
+            return temp;
+        }
+        public void AddChild(Tag t)
+        {
+            if (!string.IsNullOrWhiteSpace(this.tag)) { t.Parent = this; Children.Add(t); }
+        }
+        public bool Equals(Tag other)
+        {
+            // Check whether the compared object is null.
+            if (Object.ReferenceEquals(other, null)) return false;
+
+            // Check whether the compared object references the same data.
+            if (Object.ReferenceEquals(this, other)) return true;
+
+            // Check whether the objects’ properties are equal.
+            return tag.Equals(other.tag);// &&               Textual.Equals(other.Textual);
+        }
+        public override int GetHashCode()
+        {
+            // may want to make this use hash to be safe
+            // Get the hash code for the Textual field if it is not null.
+            int hashTextual = tag == null ? 0 : tag.GetHashCode();
+
+            // Get the hash code for the Digital field.
+            //int hashDigital = Digital.GetHashCode();
+
+            // Calculate the hash code for the object.
+            return hashTextual;//hashDigital ^ hashTextual;
+        }
+
+    }
+    
+    
 }
